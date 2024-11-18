@@ -2,7 +2,7 @@ import React from 'react'
 
 const RealTimeAlerts = () => {
   return (
-    <div>RealTimeAlerts</div>
+    <div>❗📌⚠️🚨</div>
   )
 }
 
