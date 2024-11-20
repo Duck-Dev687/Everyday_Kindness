@@ -9,16 +9,13 @@ import LocationChallenges from './components/LocationChallenges';//😊😊put i
 import KindnessCategories from './components/KindnessCategories';//😊😊
 import RealTimeAlerts from './components/RealTimeAlerts';//❗📌⚠️🚨
 import KindnessLibrary from './components/KindnessLibrary';
-import AIGeneratedSuggestions from './components/AIGeneratedSuggestions';
+// import AIGeneratedSuggestions from './components/AIGeneratedSuggestions';❗📌⚠️🚨
 import UserSubmittedChallenges from './components/UserSubmittedChallenges';
 import KindnessMap from './components/KindnessMap';
 import MoodBoosters from './components/MoodBoosters';
-import EventCalendar from './components/EventCalendar';
 import KindnessWishlist from './components/KindnessWishlist';
-import SocialGoodPartners from './components/SocialGoodPartners';
-import ChildrenFriendlyVersion from './components/ChildrenFriendlyVersion';
-import OfflineMode from './components/OfflineMode';
-import MultilingualSupport from './components/MultilingualSupport';
+import AIGeneratedSuggestions from './components/AIGeneratedSuggestions';
+
 
 // App component
 const App: React.FC = () => {
@@ -41,6 +38,35 @@ const App: React.FC = () => {
     const [streak, setStreak] = useState<number>(19);
     ///////////////////////////////////////
     
+
+
+
+
+    const [completedChallenges, setCompletedChallenges] = useState<number>(0);  // Tracks the number of completed challenges
+    // const [streak, setStreak] = useState<number>(0);  // Tracks the current streak
+    const [awards, setAwards] = useState<string[]>([]);  // Tracks the awards
+  
+    // Handle task completion
+    const handleTaskCompletion = () => {
+      setCompletedChallenges((prev) => prev + 1);
+      setStreak((prev) => prev + 1);  // Increment streak
+      checkAwards();
+    };
+  
+    // Check for streak milestones and awards
+    const checkAwards = () => {
+      // Example award logic: 10 challenges = "Challenge Master" award
+      if (completedChallenges >= 10 && !awards.includes('Challenge Master')) {
+        setAwards((prevAwards) => [...prevAwards, 'Challenge Master']);
+      }
+  
+      // Example streak logic: 5 days = "Streak Star" award
+      if (streak >= 5 && !awards.includes('Streak Star')) {
+        setAwards((prevAwards) => [...prevAwards, 'Streak Star']);
+      }
+    };
+
+
   return (
     <div className="App">
       {/* <header>NEED TO MAKE NAV LATER</header> */}
@@ -53,15 +79,16 @@ const App: React.FC = () => {
         goal={goal}
         onGoalChange={handleGoalChange}
         />
-        {/* ////////////////////////////////////////// */}
-        {/* ////////////////////////////////////////// */}
-        {/* ////////////THE STREAKS IN 3 MUSST BE EDITED LATER TO NOT BE STATIC//////////////////// */}
-        {/* ////////////////////////////////////////// */}
-        {/* ////////////////////////////////////////// */}
+
+        <AIGeneratedSuggestions></AIGeneratedSuggestions>
+
         <StreaksAndRewards></StreaksAndRewards>
-        <LocationChallenges></LocationChallenges>
-        <KindnessCategories />
-      
+        <UserSubmittedChallenges></UserSubmittedChallenges>
+        <KindnessLibrary />
+
+        <MoodBoosters></MoodBoosters>
+        <KindnessWishlist></KindnessWishlist>
+
       </main>
       
     </div>

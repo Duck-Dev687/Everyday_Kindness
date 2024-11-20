@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
-// Define the categories with tasks
+// Define props for the component
+interface KindnessCategoriesProps {
+  onTaskComplete: () => void;
+}
+
 const categories = [
   {
     id: 1,
@@ -54,23 +58,38 @@ const categories = [
   },
 ];
 
-const KindnessCategories: React.FC = () => {
+const KindnessCategories: React.FC<KindnessCategoriesProps> = ({ onTaskComplete }) => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [completedTasks, setCompletedTasks] = useState<number[]>([]); // To track completed tasks
+  const [completedTasks, setCompletedTasks] = useState<number[]>([]);
+  const [status, setStatus] = useState<string | null>(null);
 
   const handleCategoryClick = (id: number) => {
     setSelectedCategory(id);
     setCompletedTasks([]); // Reset completed tasks when changing category
+    setStatus(null); // Reset status
   };
 
   const handleTaskCompletion = (taskIndex: number) => {
-    // Add task to the completed tasks array if not already completed
     if (!completedTasks.includes(taskIndex)) {
       setCompletedTasks((prev) => [...prev, taskIndex]);
+      onTaskComplete(); // Notify the parent component
     }
   };
 
   const currentCategory = categories.find((category) => category.id === selectedCategory);
+
+  const handleAllTasksCompleted = () => {
+    if (completedTasks.length === currentCategory?.tasks.length) {
+      setStatus('done');
+    }
+  };
+
+  // Trigger completion status check after each task is completed
+  React.useEffect(() => {
+    if (currentCategory) {
+      handleAllTasksCompleted();
+    }
+  }, [completedTasks, currentCategory]);
 
   return (
     <div className="kindness-categories">
@@ -108,7 +127,7 @@ const KindnessCategories: React.FC = () => {
             ))}
           </ul>
 
-          {completedTasks.length === currentCategory.tasks.length && (
+          {status === 'done' && (
             <div className="congratulations-message">
               <h4>Congratulations! You've completed all tasks in this category!</h4>
             </div>

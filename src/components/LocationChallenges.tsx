@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 
-
+interface LocationChallengesProps {
+  onChallengeComplete: () => void;
+}
 interface Challenge {
   id: number;
   text: string;
 }
+
 
 const challengesByLocation: Record<string, Challenge[]> = {
   home: [
@@ -57,13 +60,11 @@ const challengesByLocation: Record<string, Challenge[]> = {
   ],
 };
 
-const LocationChallenges: React.FC = () => {
+const LocationChallenges: React.FC<LocationChallengesProps> = ({ onChallengeComplete }) => {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [dropReason, setDropReason] = useState<string>('');
-  const [otherReason, setOtherReason] = useState(''); // New state for the input field
-  
+
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
     setSelectedChallenge(null);
@@ -75,16 +76,9 @@ const LocationChallenges: React.FC = () => {
     setStatus(null);
   };
 
-  const handleConfirm = () => {
-    setStatus('confirmed');
-  };
-
-  const handleDrop = () => {
-    setStatus('dropped');
-  };
-
   const handleDone = () => {
     setStatus('done');
+    onChallengeComplete(); // Notify parent about challenge completion
   };
 
   return (
@@ -100,7 +94,7 @@ const LocationChallenges: React.FC = () => {
 
       {selectedLocation && (
         <div className="challenge-list">
-          <h3>Challenges for {selectedLocation.charAt(0).toUpperCase() + selectedLocation.slice(1)}:</h3>
+          <h3>Challenges for {selectedLocation}:</h3>
           <ul>
             {challengesByLocation[selectedLocation].map((challenge) => (
               <li
@@ -113,61 +107,14 @@ const LocationChallenges: React.FC = () => {
             ))}
           </ul>
 
-          {selectedChallenge && status === null && (
-            <div>
-              <p>
-                Selected Challenge: <strong>{selectedChallenge.text}</strong>
-              </p>
-              <button onClick={handleConfirm}>Confirm</button>
-            </div>
-          )}
+          {status === 'done' && <p>Great job on completing the challenge!</p>}
 
-          {status === 'confirmed' && (
+          {selectedChallenge && (
             <div>
-              <p>Challenge in Progress: <strong>{selectedChallenge?.text}</strong></p>
+              <p>Selected Challenge: <strong>{selectedChallenge.text}</strong></p>
               <button onClick={handleDone}>Mark as Done</button>
-              <button onClick={handleDrop}>Drop Challenge</button>
             </div>
           )}
-
-{status === 'dropped' && (
-  <div>
-    <h4>Why did you drop the challenge?</h4>
-    <select value={dropReason} onChange={(e) => setDropReason(e.target.value)}>
-      <option value="">Select a reason</option>
-      <option value="It was hard for me">It was hard for me</option>
-      <option value="I didn’t have enough time">I didn’t have enough time</option>
-      <option value="It wasn’t interesting">It wasn’t interesting</option>
-      <option value="Other">Other</option>
-    </select>
-
-    {dropReason === 'Other' && (
-      <div>
-        <label htmlFor="otherReason">Please specify why you dropped the challenge:</label>
-        <input
-          type="text"
-          id="otherReason"
-          value={otherReason} // Use separate state for the input
-          onChange={(e) => setOtherReason(e.target.value)} // Update otherReason state
-          placeholder="Enter your reason here"
-        />
-        <button
-          type="submit"
-          onClick={(e) => {
-            e.preventDefault();
-            // Add logic here to handle the submission of the 'Other' reason
-            console.log("Submitted reason:", otherReason); // Example of submission
-          }}
-        >
-          Submit Reason
-        </button>
-      </div>
-    )}
-  </div>
-)}
-
-{status === 'done' && <p>Great job on completing the challenge!</p>}
-
         </div>
       )}
     </div>

@@ -1,30 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-interface StreaksAndRewardsProps {
-  // No need to pass streak as a prop anymore, it will be handled internally
-}
+interface StreaksAndRewardsProps {}
 
 const StreaksAndRewards: React.FC<StreaksAndRewardsProps> = () => {
   const [streak, setStreak] = useState<number>(0);
-  const [rewardMessage, setRewardMessage] = useState<string>('');
-  const [currentBadge, setCurrentBadge] = useState<string>('');
+  const [rewardMessage, setRewardMessage] = useState<string>(''); 
+  const [currentBadge, setCurrentBadge] = useState<string>(''); 
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
+  const [errorMessage, setErrorMessage] = useState<string>(''); // Error message state
 
-  // Handle streak logic inside the component
+  // Fetch streak data from backend
   useEffect(() => {
-    const lastStreakDate = localStorage.getItem('lastStreakDate');
-    const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    axios.get('http://localhost:3001/streak')
+      .then((response) => {
+        const { streak, lastStreakDate } = response.data;
+        const currentDate = new Date().toISOString().split('T')[0];
 
-    if (lastStreakDate === currentDate) {
-      // User did something today, continue the streak
-      const savedStreak = parseInt(localStorage.getItem('streak') || '0', 10);
-      setStreak(savedStreak);
-    } else if (lastStreakDate) {
-      // User skipped a day, reset streak to 1
-      setStreak(1);
-    } else {
-      // First time visiting, start with streak of 1
-      setStreak(1);
-    }
+        if (lastStreakDate === currentDate) {
+          setStreak(streak);
+        } else if (lastStreakDate) {
+          setStreak(1); // If streak date is different, reset to 1
+        } else {
+          setStreak(1); // If no data, start with streak 1
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching streak data:', error);
+        setErrorMessage('Failed to load streak data.');
+      });
   }, []);
 
   // Update reward message and badge based on streak
@@ -44,37 +48,52 @@ const StreaksAndRewards: React.FC<StreaksAndRewardsProps> = () => {
     }
   }, [streak]);
 
-  // Function to simulate completing an action and updating the streak
-  const handleActionComplete = () => {
-    const currentDate = new Date().toISOString().split('T')[0]; // Current date
-    const lastStreakDate = localStorage.getItem('lastStreakDate');
-    let newStreak = streak;
+  // Handle completion of action and updating streak
+  const handleActionComplete = async () => {
+    setIsLoading(true); // Set loading state
+    setErrorMessage(''); // Clear any previous error message
 
+    const currentDate = new Date().toISOString().split('T')[0];
+    const lastStreakDate = localStorage.getItem('lastStreakDate') || ''; // Default to empty string if null
+    let currentStreak = streak;
+
+    // Check if the action was completed today
     if (lastStreakDate === currentDate) {
-      // If the action was completed today, do nothing
-      return;
+      setIsLoading(false); // Reset loading state if already done today
+      return; // Action was already completed today, do nothing
     }
 
-    // If the user completed something yesterday, increment the streak
-    if (lastStreakDate) {
-      const lastDate = new Date(lastStreakDate);
-      const today = new Date(currentDate);
-      const diffDays = Math.ceil((today.getTime() - lastDate.getTime()) / (1000 * 3600 * 24));
+    if (lastStreakDate !== currentDate && streak > 0) {
+      currentStreak = streak + 1; // Increment streak if action was completed today
+    }
 
-      if (diffDays === 1) {
-        newStreak += 1;
+    const requestData = {
+      currentStreak,
+      lastStreakDate: currentDate, // Use current date for update
+    };
+
+    try {
+      const response = await fetch('http://localhost:3001/streak', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setStreak(data.data.streak); // Update streak in React state
+        localStorage.setItem('lastStreakDate', currentDate); // Save the current date to localStorage
       } else {
-        newStreak = 1; // Reset streak if not consecutive
+        setErrorMessage(data.message || 'Something went wrong!'); // Handle API error message
       }
-    } else {
-      newStreak = 1; // First streak
+    } catch (error) {
+      console.error('Error updating streak:', error);
+      setErrorMessage('Failed to update streak. Please try again later.'); // Generic error message
     }
 
-    // Save the new streak and date in localStorage
-    localStorage.setItem('streak', newStreak.toString());
-    localStorage.setItem('lastStreakDate', currentDate);
-
-    setStreak(newStreak); // Update state
+    setIsLoading(false); // Reset loading state after API call
   };
 
   return (
@@ -85,7 +104,14 @@ const StreaksAndRewards: React.FC<StreaksAndRewardsProps> = () => {
         <p>{rewardMessage}</p>
         <div className="badge-display">{currentBadge}</div>
       </div>
-      <button onClick={handleActionComplete}>Complete a Good Action</button>
+
+      {/* Display error message if any */}
+      {errorMessage && <p className="error-message">{errorMessage}</p>}
+
+      {/* Button with loading and action completion */}
+      <button onClick={handleActionComplete} disabled={isLoading}>
+        {isLoading ? 'Updating...' : 'Complete a Good Action'}
+      </button>
     </div>
   );
 };
