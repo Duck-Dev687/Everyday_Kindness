@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
+import { useChallenges } from './context/ChallengesContext';
 
-interface LocationChallengesProps {
-  onChallengeComplete: () => void;
-}
+
 interface Challenge {
   id: number;
   text: string;
@@ -60,10 +59,13 @@ const challengesByLocation: Record<string, Challenge[]> = {
   ],
 };
 
-const LocationChallenges: React.FC<LocationChallengesProps> = ({ onChallengeComplete }) => {
+const LocationChallenges: React.FC= () => {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  
+  const { incrementTaskCount } = useChallenges();
+
 
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
@@ -78,7 +80,7 @@ const LocationChallenges: React.FC<LocationChallengesProps> = ({ onChallengeComp
 
   const handleDone = () => {
     setStatus('done');
-    onChallengeComplete(); // Notify parent about challenge completion
+    incrementTaskCount(); // Notify parent about challenge completion
   };
 
   return (

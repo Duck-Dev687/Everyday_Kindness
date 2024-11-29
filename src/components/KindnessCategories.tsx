@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
+import { useChallenges } from './context/ChallengesContext';
 
 // Define props for the component
 interface KindnessCategoriesProps {
-  onTaskComplete: () => void;
+  incrementTaskCount: () => void;
 }
-
-const categories = [
-  {
-    id: 1,
-    title: 'Acts of Kindness',
-    description: 'Small everyday gestures that brighten someone’s day.',
-    tasks: [
-      'Compliment a friend or family member.',
-      'Help someone carry their groceries.',
+  const categories = [
+    {
+      id: 1,
+      title: 'Acts of Kindness',
+      description: 'Small everyday gestures that brighten someone’s day.',
+      tasks: [
+        'Compliment a friend or family member.',
+        'Help someone carry their groceries.',
       'Offer your seat to someone in need.',
     ],
   },
@@ -58,10 +58,11 @@ const categories = [
   },
 ];
 
-const KindnessCategories: React.FC<KindnessCategoriesProps> = ({ onTaskComplete }) => {
+const KindnessCategories: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [completedTasks, setCompletedTasks] = useState<number[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+  const { incrementTaskCount } = useChallenges();
 
   const handleCategoryClick = (id: number) => {
     setSelectedCategory(id);
@@ -72,7 +73,7 @@ const KindnessCategories: React.FC<KindnessCategoriesProps> = ({ onTaskComplete 
   const handleTaskCompletion = (taskIndex: number) => {
     if (!completedTasks.includes(taskIndex)) {
       setCompletedTasks((prev) => [...prev, taskIndex]);
-      onTaskComplete(); // Notify the parent component
+      incrementTaskCount()
     }
   };
 

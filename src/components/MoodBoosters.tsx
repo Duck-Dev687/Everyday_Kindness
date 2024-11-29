@@ -40,6 +40,7 @@ const MoodBoosters: React.FC = () => {
 
   return (
     <div className="mood-selector">
+      
       <h2>How are you feeling right now?</h2>
 
       <div className="emoji-container">

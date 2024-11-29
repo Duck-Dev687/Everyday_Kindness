@@ -1,24 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useChallenges } from './context/ChallengesContext';
 import KindnessCategories from './KindnessCategories';
 import LocationChallenges from './LocationChallenges';
 
-const UserSubmittedChallenges: React.FC = () => {
-  const [completedTasksCount, setCompletedTasksCount] = useState(0);
 
-  // Function to increment the count of completed tasks
-  const handleTaskCompletion = () => {
-    setCompletedTasksCount((prevCount) => prevCount + 1);
-  };
+
+const UserSubmittedChallenges: React.FC = () => {
+  const { completedTasksCount } = useChallenges();
 
   return (
     <div>
-      <h2>Kindness Challenges</h2>
-      <p>Total Completed Tasks: {completedTasksCount}</p>
-
-      {/* Pass the onTaskComplete prop to KindnessCategories */}
-      <KindnessCategories onTaskComplete={handleTaskCompletion} />
-      <LocationChallenges onChallengeComplete={handleTaskCompletion} />
-    
+      <KindnessCategories />
+      <LocationChallenges />
     </div>
   );
 };
